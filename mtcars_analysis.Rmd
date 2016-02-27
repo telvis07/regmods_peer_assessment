@@ -1,0 +1,121 @@
+---
+title: 'Regression Models Project: Motor Trend MPG Analysis'
+author: "Telvis Calhoun"
+date: "February 26, 2016"
+output:
+  pdf_document: default
+  html_document:
+    keep_md: yes
+---
+
+## Overview
+
+In this project, we explore the `Motor Trend Car Road Tests` (mtcars) dataset. We'll analyze this dataset to answer the following questions. 
+
+1. “Is an automatic or manual transmission better for MPG”
+2. "Quantify the MPG difference between automatic and manual transmissions"
+
+## Exploratory Analysis
+
+First, lets load libraries and datasets used in the analysis.
+
+```{r, message=FALSE}
+library(datasets)
+library(ggplot2)
+library(dplyr)
+data("mtcars")
+```
+
+A quick summary of the data shows `mtcars` dataset 11 variables. For this analysis, we will investigate the Miles/(US) gallon `mpg` as a function of the Transmission type `am`.
+
+```{r echo=TRUE,cache=TRUE}
+summary(mtcars)
+```
+
+Let's create a factor variable called `am_factor` that will show the strings 'automatic' where `am == 1` and 'manual' where `am == 0`.
+
+```{r echo=TRUE,cache=TRUE}
+mtcars <- mutate(mtcars, am=factor(ifelse(am==1, 'automatic', 'manual')))
+table(mtcars$am)
+```
+
+## Automatic Vs. Manual Comparison
+
+We can calculate the mean `mpg` for both 'automatic' and 'manual' transmissions by fitting a linear model with a "dummy variable" `am_factor` and dropping the intercept by including a `- 1` in the formula. The `Estimate` column shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The p-value shows the significance compared to the `0 estimate`.
+
+```{r echo=TRUE,cache=TRUE}
+summary(lm(mpg ~ am - 1, mtcars))$coef
+```
+
+To sanity check, let's use `dplyr` to calculate the group means to verify our `lm` output. The output shows the means are identical to the `lm` output.
+
+```{r echo=TRUE,cache=TRUE}
+summarise(group_by(mtcars, am), mn=mean(mpg))
+```
+
+We can use a `lm` to calculate the statistical significance of the difference between the group mean mpg for 'automatic' and 'manual' transmission. The model uses the 'automatic' mpg as the intercept - where the intercept is the estimated mean for the reference level. The estimate for 'manual' transmission mpg is `-7.24 mpg` less than the reference level. The 'manual' p-value shows difference in the group mean from the reference is statistically significant (p < 0.05).
+
+```{r echo=TRUE,cache=TRUE}
+summary(lm(mpg ~ am, mtcars))$coef
+```
+
+The confidence interval is entirely below 0. Therefore we are confident that the automatic transmission reduces the `mpg`.
+
+```{r echo=TRUE,cache=TRUE}
+confint(lm(mpg ~ am, mtcars))
+```
+
+## Model Selection
+
+In the previous section, we use a linear model to perform statistical inference. However, a linear model may not be best for modeling the `mtcars` data because the outcome `mpg` is (1) always greater than 0 and (2) potentially unbounded. A poisson model may be better suited for this data. Let's explore this by plotting the residuals for a linear and poisson model. 
+
+## Linear Regression
+Let's fit a linear regression model for mpg ~ all other variables in `mtcars`, calc the residuals and the fitted (yhat) values.
+
+```{r,echo=TRUE,cache=TRUE}
+fit_lm <- lm(mpg ~ ., data=mtcars)
+```
+
+Now let's plot the residuals vs. fitted values.
+
+```{r,echo=FALSE,cache=TRUE}
+# data frame with resids and yhats
+df <- data.frame(e=resid(fit_lm), yhat = predict(fit_lm))
+
+# plot
+g <- ggplot(df, aes(yhat, e), title="foo") + 
+    geom_point() + 
+    geom_smooth(method="loess") +
+    ggtitle("Residuals Vs. Fitted (linear model)") +
+    xlab("Fitted Miles per Gallon (mpg)") +
+    ylab("Residuals (mpg)")
+  
+print(g)
+```
+
+The plot shows a curve in the residuals. The residuals become more negative until they reach ~22.5 mpg then they become more positive. This suggests that the linear model is a poor fit for the `mtcars` data.
+
+```{r,echo=TRUE,cache=TRUE,message=FALSE,warning=FALSE}
+fit_pois <- glm(formula= mpg ~ ., data=mtcars, family=poisson)
+```
+
+## Poisson Model
+Let's fit a poisson regression model for mpg ~ all other variables in `mtcars`, calc the residuals and the fitted (yhat) values.
+
+```{r,echo=FALSE,cache=TRUE}
+df <- data.frame(e=resid(fit_pois), yhat = predict(fit_pois))
+  
+g <- ggplot(df, aes(yhat, e), title="foo") + 
+    geom_point() + 
+    geom_smooth(method="loess") +
+    ggtitle("Residuals Vs. Fitted (poisson model)") +
+    xlab("Fitted Miles per Gallon (log(mpg))") +
+    ylab("Residuals (log(mpg))")
+  
+print(g)
+```
+
+The residual plot for the poisson model looks smoother than for the linear model. This is because the output (Y) is now the log(E[Y]) and residuals are in the same log units. Using the log "squashes" the variance in the residuals.
+
+## Conclusion
+We show that we most accurately model the relationship between `MPG` and `transmission type` using a `poisson` generalized linear model. This model has lower residual error than `linear` model. `TODO: FIXME` : The results show that an automatic transmission has `0.0%` greater fuel efficiency than manual transmission. However, the results show that the difference in fuel efficiency decreases by `0.0%` when we adjust for the number of cylinders.
