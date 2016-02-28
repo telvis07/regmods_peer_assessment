@@ -39,83 +39,85 @@ mtcars <- mutate(mtcars, am=factor(ifelse(am==1, 'automatic', 'manual')))
 table(mtcars$am)
 ```
 
-## Automatic Vs. Manual Comparison
-
-We can calculate the mean `mpg` for both 'automatic' and 'manual' transmissions by fitting a linear model with a "dummy variable" `am_factor` and dropping the intercept by including a `- 1` in the formula. The `Estimate` column shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The p-value shows the significance compared to the `0 estimate`.
-
-```{r echo=TRUE,cache=TRUE}
-summary(lm(mpg ~ am - 1, mtcars))$coef
-```
-
-To sanity check, let's use `dplyr` to calculate the group means to verify our `lm` output. The output shows the means are identical to the `lm` output.
-
-```{r echo=TRUE,cache=TRUE}
-summarise(group_by(mtcars, am), mn=mean(mpg))
-```
-
-We can use a `lm` to calculate the statistical significance of the difference between the group mean mpg for 'automatic' and 'manual' transmission. The model uses the 'automatic' mpg as the intercept - where the intercept is the estimated mean for the reference level. The estimate for 'manual' transmission mpg is `-7.24 mpg` less than the reference level. The 'manual' p-value shows difference in the group mean from the reference is statistically significant (p < 0.05).
-
-```{r echo=TRUE,cache=TRUE}
-summary(lm(mpg ~ am, mtcars))$coef
-```
-
-The confidence interval is entirely below 0. Therefore we are confident that the automatic transmission reduces the `mpg`.
-
-```{r echo=TRUE,cache=TRUE}
-confint(lm(mpg ~ am, mtcars))
-```
-
 ## Model Selection
 
-In the previous section, we use a linear model to perform statistical inference. However, a linear model may not be best for modeling the `mtcars` data because the outcome `mpg` is (1) always greater than 0 and (2) potentially unbounded. A poisson model may be better suited for this data. Let's explore this by plotting the residuals for a linear and poisson model. 
+Before we can characterize the relationship between `mpg` and the transmission type (`am`), we must first search for other variables that can distort, or confound the relationship between the variables. First we will "get our hands dirty" and quantify the percentage change in the `am` coefficient when we adjust for all other variables.
 
-## Linear Regression
-Let's fit a linear regression model for mpg ~ all other variables in `mtcars`, calc the residuals and the fitted (yhat) values.
+```{r echo=TRUE,cache=TRUE}
+# baseline
+a <- summary(lm(mpg ~ am, data=mtcars))$coef[2]
 
-```{r,echo=TRUE,cache=TRUE}
-fit_lm <- lm(mpg ~ ., data=mtcars)
+# calc percent change in the baseline for each covariate
+rbind(
+  c('baseline', 'cyl', 'disp', 'hp', 'drat', 'wt', 'qsec', 'vs', 'gear', 'carb'),
+  round(c((a-a)/a,
+    100 * (a - summary(lm(mpg ~ am + cyl, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + disp, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + hp, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + drat, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + wt, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + qsec, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + vs, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + gear, data=mtcars))$coef[2])/a,
+    100 * (a - summary(lm(mpg ~ am + carb, data=mtcars))$coef[2])/a
+  ), digits=2)
+)
 ```
 
-Now let's plot the residuals vs. fitted values.
+The output shows that `cyl`, `disp`, `hp`, `drat`, `wt` all change the `mpg` coeffient by greater than +/- 25%. Now let's generate nested models for these `5` variables using and evaluate them using a nested likelihood ratio tests.
 
-```{r,echo=FALSE,cache=TRUE}
-# data frame with resids and yhats
+```{r echo=TRUE,cache=TRUE}
+fit1 <- lm(mpg ~ am, data=mtcars)
+fit2 <- lm(mpg ~ am + cyl, data=mtcars)
+fit3 <- lm(mpg ~ am + cyl + disp, data=mtcars)
+fit4 <- lm(mpg ~ am + cyl + disp + hp, data=mtcars)
+fit5 <- lm(mpg ~ am + cyl + disp + hp + drat, data=mtcars)
+fit6 <- lm(mpg ~ am + cyl + disp + hp + drat + wt, data=mtcars)
+anova(fit1, fit2, fit3, fit4, fit5, fit6)
+```
+
+The results show that models 2, 4 and 6 have the greates significance. This suggests that `disp` and `drat` should be excluded from the model. The comparison below that good model lowest p-value with the variables: `am`, `cyl`, `hp` and `wt`.
+
+```{r echo=TRUE,cache=TRUE}
+fit1 <- lm(mpg ~ am, data=mtcars)
+fit7 <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+```
+
+The `r.squared` value for this model indicates that 83% of the total variablity is explained by the linear relationship between the `mpg` and `am`, `cyl`, `hp` and `wt`.
+
+```{r echo=TRUE,cache=TRUE}
+summary(fit7)$adj.r.squared
+```
+
+Finally, we plot the residuals to search for a pattern in the residuals vs the fitted (yhat) values. The plot shows a slight curve in the values - but nothing too bad.
+
+```{r echo=FALSE,cache=TRUE}
+fit_lm <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
 df <- data.frame(e=resid(fit_lm), yhat = predict(fit_lm))
-
-# plot
 g <- ggplot(df, aes(yhat, e), title="foo") + 
-    geom_point() + 
-    geom_smooth(method="loess") +
-    ggtitle("Residuals Vs. Fitted (linear model)") +
-    xlab("Fitted Miles per Gallon (mpg)") +
-    ylab("Residuals (mpg)")
-  
+  geom_point() + 
+  geom_smooth(method="loess") +
+  ggtitle("Residuals Vs. Fitted (linear model)") +
+  xlab("Fitted Miles per Gallon (mpg)") +
+  ylab("Residuals (mpg)")
+
 print(g)
 ```
 
-The plot shows a curve in the residuals. The residuals become more negative until they reach ~22.5 mpg then they become more positive. This suggests that the linear model is a poor fit for the `mtcars` data.
+## Automatic Vs. Manual Comparison
 
-```{r,echo=TRUE,cache=TRUE,message=FALSE,warning=FALSE}
-fit_pois <- glm(formula= mpg ~ ., data=mtcars, family=poisson)
+Now that we have a model containing the necessary covariates, let's calculate the change in `mpg` for transmission type after adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The results show that the `mpg` for a manual transmission decreases by `1.48 mpg` holding other variables constant.
+
+```{r echo=TRUE,cache=TRUE}
+summary(fit_lm)$coef
 ```
 
-## Poisson Model
-Let's fit a poisson regression model for mpg ~ all other variables in `mtcars`, calc the residuals and the fitted (yhat) values.
+However, the confidence interval for `am` ranges from `-4.4` to `1.47`. Because it includes 0, we cannot reject the null hypothesis after  adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`).
 
-```{r,echo=FALSE,cache=TRUE}
-df <- data.frame(e=resid(fit_pois), yhat = predict(fit_pois))
-  
-g <- ggplot(df, aes(yhat, e), title="foo") + 
-    geom_point() + 
-    geom_smooth(method="loess") +
-    ggtitle("Residuals Vs. Fitted (poisson model)") +
-    xlab("Fitted Miles per Gallon (log(mpg))") +
-    ylab("Residuals (log(mpg))")
-  
-print(g)
+```{r echo=TRUE,cache=TRUE}
+confint(fit_lm)
 ```
 
-The residual plot for the poisson model looks smoother than for the linear model. This is because the output (Y) is now the log(E[Y]) and residuals are in the same log units. Using the log "squashes" the variance in the residuals.
 
 ## Conclusion
 We show that we most accurately model the relationship between `MPG` and `transmission type` using a `poisson` generalized linear model. This model has lower residual error than `linear` model. `TODO: FIXME` : The results show that an automatic transmission has `0.0%` greater fuel efficiency than manual transmission. However, the results show that the difference in fuel efficiency decreases by `0.0%` when we adjust for the number of cylinders.
