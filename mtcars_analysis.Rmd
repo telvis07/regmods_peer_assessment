@@ -8,12 +8,16 @@ output:
     keep_md: yes
 ---
 
-## Overview
+## Executive Summary
 
-In this project, we explore the `Motor Trend Car Road Tests` (mtcars) dataset. We'll analyze this dataset to answer the following questions. 
+We explore the `Motor Trend Car Road Tests` (mtcars) dataset. We'll analyze this dataset to answer the following questions. 
 
 1. “Is an automatic or manual transmission better for MPG”
 2. "Quantify the MPG difference between automatic and manual transmissions"
+
+To accomplish this, we will first determine the relationship between the covariates in the `mtcars` data. Next, we build several linear regression models and use model selection techniques to find the "best fit" model. Finally, we perform statistical inference using the "best fit"" model to determine the relationship between MPG and the transmission type after adjusting for statistically significant covariates.
+
+We conclude that both "automatic" and "manual" transmissions have roughly equal MPG after we adjust for for Number of Cylinders, Gross Horsepower and weight. The analysis shows that MPG for a manual transmission decreases by `1.8 mpg` holding other variables constant.
 
 ## Exploratory Analysis
 
@@ -26,22 +30,61 @@ library(dplyr)
 data("mtcars")
 ```
 
-A quick summary of the data shows `mtcars` dataset 11 variables. For this analysis, we will investigate the Miles/(US) gallon `mpg` as a function of the Transmission type `am`.
+**Appendix 1** shows the `mtcars` dataset has 11 variables. Let's change the `am` variable to a factor. This will make the `R` output show the strings 'automatic' where `am == 1` and 'manual' where `am == 0`. We also make `cyl` a factor since its values are only `4` and `6`.
 
 ```{r echo=TRUE,cache=TRUE}
-summary(mtcars)
-```
-
-Let's create a factor variable called `am_factor` that will show the strings 'automatic' where `am == 1` and 'manual' where `am == 0`.
-
-```{r echo=TRUE,cache=TRUE}
-mtcars <- mutate(mtcars, am=factor(ifelse(am==1, 'automatic', 'manual')))
+mtcars <- mutate(mtcars, 
+                 am=factor(ifelse(am==1, 'automatic', 'manual')),
+                 cyl=as.factor(cyl))
 table(mtcars$am)
 ```
 
 ## Model Selection
 
-Before we can characterize the relationship between `mpg` and the transmission type (`am`), we must first search for other variables that can distort, or confound the relationship between the variables. First we will "get our hands dirty" and quantify the percentage change in the `am` coefficient when we adjust for all other variables.
+Before we can characterize the relationship between `mpg` and the transmission type (`am`), we must first search for other variables that can distort, or confound the relationship between the `mpg` and `am`. The analysis performed in **Appendix 2** shows that `cyl`, `disp`, `hp`, `drat`, `wt` all significantly change the `am` coeffient when included in a linear model with `am`. In **Appendix 3**, we generate nested models for `am` plus these `5` variables then evaluate them using nested likelihood ratio tests.
+
+The "best fit" model includes: `am`, `cyl`, `hp` and `wt`.
+
+```{r echo=TRUE}
+best_fit <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+```
+
+The `r.squared` value for this model indicates that `83%` of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
+
+```{r echo=TRUE}
+summary(best_fit)$adj.r.squared
+```
+
+Finally, in **Appendix 4** we plot the residuals to search for a pattern in the versus the fitted (`yhat`) values. The plot shows a slight curve in the values - but nothing too bad.
+
+## Automatic Vs. Manual Comparison
+
+Now that we have a model containing the necessary covariates, let's calculate the change in `mpg` for transmission type after adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The results show that the `mpg` for a manual transmission decreases by `1.48 mpg` holding other variables constant.
+
+```{r echo=TRUE}
+summary(best_fit)$coef
+```
+
+However, the confidence interval for `am` ranges from `-4.6` to `1.06`. Because it includes 0, we cannot reject the null hypothesis after  adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). Therefore, we conclude that both "automatic" and "manual" transmissions have roughly equal MPG after we adjust for `cyl`, `hp` and `wt`.
+
+```{r echo=TRUE}
+confint(best_fit)
+```
+
+
+## Conclusion
+We conclude that both "automatic" and "manual" transmissions have roughly equal MPG after we adjust for for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The analysis shows that the `mpg` for a manual transmission decreases by `1.8 mpg` holding other variables constant. 
+
+# Appendix
+##  Appendix 1: mtcars summary
+
+```{r echo=TRUE,cache=TRUE}
+summary(mtcars)
+```
+
+## Appendix 2: covariate selection
+
+Let's "get our hands dirty" and quantify the percentage change in the `am` coefficient when we adjust for all other variables. The output shows that `cyl`, `disp`, `hp`, `drat`, `wt` all change the `am` coeffient by greater than +/- 25%
 
 ```{r echo=TRUE,cache=TRUE}
 # baseline
@@ -64,7 +107,9 @@ rbind(
 )
 ```
 
-The output shows that `cyl`, `disp`, `hp`, `drat`, `wt` all change the `mpg` coeffient by greater than +/- 25%. Now let's generate nested models for these `5` variables using and evaluate them using a nested likelihood ratio tests.
+## Appendix 3: model selection
+
+We generate nested models for these `5` variables using and evaluate them using a nested likelihood ratio tests. The results show that models 2, 4 and 6 have the greatest significance. This suggests that `disp` and `drat` should be excluded from the model.
 
 ```{r echo=TRUE,cache=TRUE}
 fit1 <- lm(mpg ~ am, data=mtcars)
@@ -76,48 +121,19 @@ fit6 <- lm(mpg ~ am + cyl + disp + hp + drat + wt, data=mtcars)
 anova(fit1, fit2, fit3, fit4, fit5, fit6)
 ```
 
-The results show that models 2, 4 and 6 have the greates significance. This suggests that `disp` and `drat` should be excluded from the model. The comparison below that good model lowest p-value with the variables: `am`, `cyl`, `hp` and `wt`.
+The comparison below shows that a model with the variables: `am`, `cyl`, `hp` and `wt` is a better fit than a model containing only `am`. This is our "best fit" model.
 
 ```{r echo=TRUE,cache=TRUE}
 fit1 <- lm(mpg ~ am, data=mtcars)
-fit7 <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+fit7 <-   lm(mpg ~ am + factor(cyl) + hp + wt, data=mtcars)
+anova(fit1, fit7)
 ```
 
-The `r.squared` value for this model indicates that 83% of the total variablity is explained by the linear relationship between the `mpg` and `am`, `cyl`, `hp` and `wt`.
-
-```{r echo=TRUE,cache=TRUE}
-summary(fit7)$adj.r.squared
-```
-
-Finally, we plot the residuals to search for a pattern in the residuals vs the fitted (yhat) values. The plot shows a slight curve in the values - but nothing too bad.
+## Appendix 4: residual plot for final model
+Finally, we plot the residuals (top left) to search for a pattern in the residuals vs the fitted (yhat) values.
 
 ```{r echo=FALSE,cache=TRUE}
-fit_lm <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
-df <- data.frame(e=resid(fit_lm), yhat = predict(fit_lm))
-g <- ggplot(df, aes(yhat, e), title="foo") + 
-  geom_point() + 
-  geom_smooth(method="loess") +
-  ggtitle("Residuals Vs. Fitted (linear model)") +
-  xlab("Fitted Miles per Gallon (mpg)") +
-  ylab("Residuals (mpg)")
-
-print(g)
+par(mfrow=c(2,2))
+plot(fit7)
 ```
 
-## Automatic Vs. Manual Comparison
-
-Now that we have a model containing the necessary covariates, let's calculate the change in `mpg` for transmission type after adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The results show that the `mpg` for a manual transmission decreases by `1.48 mpg` holding other variables constant.
-
-```{r echo=TRUE,cache=TRUE}
-summary(fit_lm)$coef
-```
-
-However, the confidence interval for `am` ranges from `-4.4` to `1.47`. Because it includes 0, we cannot reject the null hypothesis after  adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`).
-
-```{r echo=TRUE,cache=TRUE}
-confint(fit_lm)
-```
-
-
-## Conclusion
-We show that we most accurately model the relationship between `MPG` and `transmission type` using a `poisson` generalized linear model. This model has lower residual error than `linear` model. `TODO: FIXME` : The results show that an automatic transmission has `0.0%` greater fuel efficiency than manual transmission. However, the results show that the difference in fuel efficiency decreases by `0.0%` when we adjust for the number of cylinders.
