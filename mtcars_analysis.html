@@ -106,7 +106,7 @@ table(mtcars$am)</code></pre>
 </div>
 <div id="automatic-vs.-manual-comparison" class="section level2">
 <h2>Automatic Vs. Manual Comparison</h2>
-<p>Now that we have a model containing the necessary covariates, let’s calculate the change in <code>mpg</code> for transmission type after adjusting for Number of Cylinders (<code>cyl</code>), Gross Horsepower (<code>hp</code>) and weight (<code>wt</code>). The results show that the <code>mpg</code> for a manual transmission decreases by <code>1.48 mpg</code> holding other variables constant.</p>
+<p>Now that we have a model containing the necessary covariates, let’s calculate the change in <code>mpg</code> for transmission type after adjusting for Number of Cylinders (<code>cyl</code>), Gross Horsepower (<code>hp</code>) and weight (<code>wt</code>). The results show that the <code>mpg</code> for a manual transmission decreases by <code>1.80 mpg</code> holding other variables constant.</p>
 <pre class="r"><code>summary(best_fit)$coef</code></pre>
 <pre><code>##                Estimate Std. Error   t value     Pr(&gt;|t|)
 ## (Intercept) 35.51753528 2.03171034 17.481594 6.811749e-16

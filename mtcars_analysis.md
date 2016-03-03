@@ -67,7 +67,7 @@ Finally, in **Appendix 4** we plot the residuals to search for a pattern in the 
 
 ## Automatic Vs. Manual Comparison
 
-Now that we have a model containing the necessary covariates, let's calculate the change in `mpg` for transmission type after adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The results show that the `mpg` for a manual transmission decreases by `1.48 mpg` holding other variables constant.
+Now that we have a model containing the necessary covariates, let's calculate the change in `mpg` for transmission type after adjusting for Number of Cylinders (`cyl`), Gross Horsepower (`hp`) and weight (`wt`). The results show that the `mpg` for a manual transmission decreases by `1.80 mpg` holding other variables constant.
 
 
 ```r
