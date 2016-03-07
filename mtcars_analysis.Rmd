@@ -3,9 +3,9 @@ title: 'Regression Models Project: Motor Trend MPG Analysis'
 author: "Telvis Calhoun"
 date: "February 26, 2016"
 output:
+  pdf_document: default
   html_document:
     keep_md: yes
-  pdf_document: default
 ---
 
 ## Executive Summary
@@ -54,13 +54,10 @@ The "best fit" model includes: `am`, `cyl`, `hp` and `wt`.
 
 ```{r echo=TRUE}
 best_fit <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+r_squared <- round(summary(best_fit)$adj.r.squared, digits=3)*100
 ```
 
-The `r.squared` value for this model indicates that r`84%` of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
-
-```{r echo=TRUE}
-summary(best_fit)$adj.r.squared
-```
+The `r.squared` value for this model indicates that `r r_squared`% of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
 
 Finally, in **Appendix 4** we plot the residuals to search for a pattern in the versus the fitted (`yhat`) values. The plot shows a slight curve in the values - but nothing too bad.
 

@@ -55,18 +55,10 @@ The "best fit" model includes: `am`, `cyl`, `hp` and `wt`.
 
 ```r
 best_fit <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+r_squared <- round(summary(best_fit)$adj.r.squared, digits=3)*100
 ```
 
-The `r.squared` value for this model indicates that r`84%` of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
-
-
-```r
-summary(best_fit)$adj.r.squared
-```
-
-```
-## [1] 0.8400875
-```
+The `r.squared` value for this model indicates that 84% of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
 
 Finally, in **Appendix 4** we plot the residuals to search for a pattern in the versus the fitted (`yhat`) values. The plot shows a slight curve in the values - but nothing too bad.
 
@@ -236,5 +228,5 @@ anova(fit1, fit7)
 ## Appendix 4: residual plot for final model
 Finally, we plot the residuals (top left) to search for a pattern in the residuals vs the fitted (yhat) values.
 
-![](mtcars_analysis_files/figure-html/unnamed-chunk-12-1.png) 
+![](mtcars_analysis_files/figure-html/unnamed-chunk-11-1.png) 
 

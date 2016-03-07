@@ -100,10 +100,9 @@ table(mtcars$am)</code></pre>
 <h2>Model Selection</h2>
 <p>Before we can characterize the relationship between <code>mpg</code> and the transmission type (<code>am</code>), we must first search for other variables that can distort, or confound the relationship between the <code>mpg</code> and <code>am</code>. The analysis performed in <strong>Appendix 2</strong> shows that <code>cyl</code>, <code>disp</code>, <code>hp</code>, <code>drat</code>, <code>wt</code> all significantly change the <code>am</code> coeffient when included in a linear model with <code>am</code>. In <strong>Appendix 3</strong>, we generate nested models for <code>am</code> plus these <code>5</code> variables then evaluate them using nested likelihood ratio tests.</p>
 <p>The “best fit” model includes: <code>am</code>, <code>cyl</code>, <code>hp</code> and <code>wt</code>.</p>
-<pre class="r"><code>best_fit &lt;- lm(mpg ~ am + cyl + hp + wt, data=mtcars)</code></pre>
-<p>The <code>r.squared</code> value for this model indicates that r<code>84%</code> of the total variablity is explained by the linear relationship between the outcome <code>mpg</code> and the predictors <code>am</code>, <code>cyl</code>, <code>hp</code> and <code>wt</code>.</p>
-<pre class="r"><code>summary(best_fit)$adj.r.squared</code></pre>
-<pre><code>## [1] 0.8400875</code></pre>
+<pre class="r"><code>best_fit &lt;- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
+r_squared &lt;- round(summary(best_fit)$adj.r.squared, digits=3)*100</code></pre>
+<p>The <code>r.squared</code> value for this model indicates that 84% of the total variablity is explained by the linear relationship between the outcome <code>mpg</code> and the predictors <code>am</code>, <code>cyl</code>, <code>hp</code> and <code>wt</code>.</p>
 <p>Finally, in <strong>Appendix 4</strong> we plot the residuals to search for a pattern in the versus the fitted (<code>yhat</code>) values. The plot shows a slight curve in the values - but nothing too bad.</p>
 </div>
 <div id="automatic-vs.-manual-comparison" class="section level2">
