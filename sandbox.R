@@ -1,6 +1,6 @@
 library(datasets)
 library(ggplot2)
-
+data(mtcars)
 
 covariate_comparison <- function(){
   a <- summary(lm(mpg ~ am, data=mtcars))$coef[2]
@@ -40,7 +40,7 @@ mtcars_final_model <- function(){
 }
 
 resid_plot_linear <- function(){
-  data(mtcars)
+
   # alternatively: http://rstudio-pubs-static.s3.amazonaws.com/22370_39a6a8e6f4b447239dc6d363b9c99e0d.html
   # mtcars$am <- as.factor(mtcars$am)
   # levels(mtcars$am) <- c("Automatic", "Manual")

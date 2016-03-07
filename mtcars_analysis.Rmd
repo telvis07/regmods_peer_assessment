@@ -3,9 +3,9 @@ title: 'Regression Models Project: Motor Trend MPG Analysis'
 author: "Telvis Calhoun"
 date: "February 26, 2016"
 output:
-  pdf_document: default
   html_document:
     keep_md: yes
+  pdf_document: default
 ---
 
 ## Executive Summary
@@ -38,6 +38,13 @@ mtcars <- mutate(mtcars,
                  cyl=as.factor(cyl))
 table(mtcars$am)
 ```
+
+The boxplot below shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The difference in the group means seem significant, we will show later that the differences are less significant after we adjust for other variables.
+
+```{r echo=FALSE,cache=TRUE}
+boxplot(mpg ~ am, data=mtcars, ylab="MPG (miles per gallon)", xlab="Transmission Type", main = "MPG vs Transmission Type")
+```
+
 
 ## Model Selection
 

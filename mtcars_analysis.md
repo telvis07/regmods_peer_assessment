@@ -41,6 +41,11 @@ table(mtcars$am)
 ##        13        19
 ```
 
+The boxplot below shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The difference in the group means seem significant, we will show later that the differences are less significant after we adjust for other variables.
+
+![](mtcars_analysis_files/figure-html/unnamed-chunk-3-1.png) 
+
+
 ## Model Selection
 
 Before we can characterize the relationship between `mpg` and the transmission type (`am`), we must first search for other variables that can distort, or confound the relationship between the `mpg` and `am`. The analysis performed in **Appendix 2** shows that `cyl`, `disp`, `hp`, `drat`, `wt` all significantly change the `am` coeffient when included in a linear model with `am`. In **Appendix 3**, we generate nested models for `am` plus these `5` variables then evaluate them using nested likelihood ratio tests.
@@ -231,5 +236,5 @@ anova(fit1, fit7)
 ## Appendix 4: residual plot for final model
 Finally, we plot the residuals (top left) to search for a pattern in the residuals vs the fitted (yhat) values.
 
-![](mtcars_analysis_files/figure-html/unnamed-chunk-11-1.png) 
+![](mtcars_analysis_files/figure-html/unnamed-chunk-12-1.png) 
 
