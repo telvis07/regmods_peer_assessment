@@ -57,7 +57,7 @@ The "best fit" model includes: `am`, `cyl`, `hp` and `wt`.
 best_fit <- lm(mpg ~ am + cyl + hp + wt, data=mtcars)
 ```
 
-The `r.squared` value for this model indicates that `83%` of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
+The `r.squared` value for this model indicates that r`84%` of the total variablity is explained by the linear relationship between the outcome `mpg` and the predictors `am`, `cyl`, `hp` and `wt`.
 
 
 ```r
