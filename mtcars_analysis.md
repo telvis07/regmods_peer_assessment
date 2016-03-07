@@ -11,7 +11,7 @@ We explore the `Motor Trend Car Road Tests` (mtcars) dataset to answer the follo
 
 To accomplish this, we will first determine the relationship between the covariates in the `mtcars` data. Next, we build several linear regression models and use model selection techniques to find the "best fit" model. Finally, we perform statistical inference using the "best fit"" model to determine the relationship between MPG and the transmission type after adjusting for statistically significant covariates.
 
-We conclude that both "automatic" and "manual" transmissions have roughly equal MPG after we adjust for for Number of Cylinders, Gross Horsepower and weight. The analysis shows that MPG for a manual transmission decreases by `1.8 mpg` holding other variables constant.
+We conclude that both "automatic" and "manual" transmissions have roughly equal MPG after we adjust for Number of Cylinders, Gross Horsepower and weight. The analysis shows that MPG for a manual transmission decreases by `1.8 mpg` holding other variables constant.
 
 ## Exploratory Analysis
 
