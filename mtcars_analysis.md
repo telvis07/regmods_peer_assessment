@@ -41,7 +41,7 @@ table(mtcars$am)
 ##        13        19
 ```
 
-The boxplot below shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The difference in the group means seem significant, we will show later that the differences are less significant after we adjust for other variables.
+The boxplot below shows the group mean is `24.4 mpg` for 'automatic' transmissions and `17.14 mpg` for 'manual' transmissions. The difference in the group means seem significant. However, we will show that the difference is less significant after we adjust for other variables.
 
 ![](mtcars_analysis_files/figure-html/unnamed-chunk-3-1.png) 
 
