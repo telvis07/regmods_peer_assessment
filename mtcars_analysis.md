@@ -4,7 +4,7 @@ February 26, 2016
 
 ## Executive Summary
 
-We explore the `Motor Trend Car Road Tests` (mtcars) dataset. We'll analyze this dataset to answer the following questions. 
+We explore the `Motor Trend Car Road Tests` (mtcars) dataset to answer the following questions. 
 
 1. “Is an automatic or manual transmission better for MPG”
 2. "Quantify the MPG difference between automatic and manual transmissions"
